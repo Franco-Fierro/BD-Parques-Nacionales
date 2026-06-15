@@ -1,5 +1,6 @@
 --Universidad Nacional de La Matanza
 --MATERIA: BASES DE DATOS APLICADA
+--COMISION: 5600
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
@@ -48,7 +49,7 @@ GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarUbicacion
     @provincia       varchar(50),
-    @localidad        varchar(80),
+    @region           varchar(80) = NULL,
     @latitud           decimal(9,6) = NULL,
     @longitud          decimal(9,6) = NULL,
     @id_ubicacion int OUTPUT
@@ -59,8 +60,8 @@ BEGIN
     DECLARE @errores varchar(1000) = '';
     IF @provincia IS NULL OR LTRIM(RTRIM(@provincia)) = ''
         SET @errores = @errores + 'La provincia no puede ser vacía. ';
-    IF @localidad IS NULL OR LTRIM(RTRIM(@localidad)) = ''
-        SET @errores = @errores + 'La localidad no puede ser vacía. ';
+    IF @region IS NULL OR LTRIM(RTRIM(@region)) = ''
+        SET @errores = @errores + 'La región no puede ser vacía. ';
     IF @latitud IS NULL OR @latitud < -90 OR @latitud > 90
         SET @errores = @errores + 'La latitud debe estar entre -90 y 90. ';
     IF @longitud IS NULL OR @longitud < -180 OR @longitud > 180
@@ -69,8 +70,8 @@ BEGIN
     IF @errores <> ''
         THROW 50001, @errores, 1;
 
-    INSERT INTO Parques.Ubicacion (provincia, localidad, latitud, longitud)
-    VALUES (@provincia, @localidad, @latitud, @longitud);
+    INSERT INTO Parques.Ubicacion (provincia, region, latitud, longitud)
+    VALUES (@provincia, @region, @latitud, @longitud);
     SET @id_ubicacion = SCOPE_IDENTITY();
 END
 GO
