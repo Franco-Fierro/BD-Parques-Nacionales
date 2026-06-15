@@ -1,6 +1,7 @@
 ------------------------------------------------------------------
 --Universidad Nacional de La Matanza
 --MATERIA: BASES DE DATOS APLICADA
+--COMISION: 5600
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
@@ -57,7 +58,9 @@ BEGIN
     CREATE TABLE Parques.Ubicacion (
       id_ubicacion INT PRIMARY KEY IDENTITY(1,1),
       provincia VARCHAR(50) NOT NULL,
-      localidad VARCHAR(80) NOT NULL
+      region VARCHAR(80) NOT NULL,
+      latitud DECIMAL(8,6) NOT NULL,
+      longitud DECIMAL(9,6) NOT NULL
     );
 END
 GO
