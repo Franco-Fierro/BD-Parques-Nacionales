@@ -49,9 +49,9 @@ GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarUbicacion
     @provincia       varchar(50),
-    @region           varchar(80) = NULL,
-    @latitud           decimal(9,6) = NULL,
-    @longitud          decimal(9,6) = NULL,
+    @region           varchar(80),
+    @latitud           decimal(8,6),
+    @longitud          decimal(9,6),
     @id_ubicacion int OUTPUT
 AS
 BEGIN
@@ -62,6 +62,19 @@ BEGIN
         SET @errores = @errores + 'La provincia no puede ser vacía. ';
     IF @region IS NULL OR LTRIM(RTRIM(@region)) = ''
         SET @errores = @errores + 'La región no puede ser vacía. ';
+    IF @latitud IS NULL OR @latitud < -90 OR @latitud > 90
+        SET @errores = @errores + 'La latitud debe estar entre -90 y 90. ';
+    IF @longitud IS NULL OR @longitud < -180 OR @longitud > 180
+        SET @errores = @errores + 'La longitud debe estar entre -180 y 180. ';
+        
+    IF @errores <> ''
+        THROW 50001, @errores, 1;
+
+    INSERT INTO Parques.Ubicacion (provincia, region, latitud, longitud)
+    VALUES (@provincia, @region, @latitud, @longitud);
+    SET @id_ubicacion = SCOPE_IDENTITY();
+END
+GO
     IF @latitud IS NULL OR @latitud < -90 OR @latitud > 90
         SET @errores = @errores + 'La latitud debe estar entre -90 y 90. ';
     IF @longitud IS NULL OR @longitud < -180 OR @longitud > 180
@@ -155,8 +168,7 @@ BEGIN
         SET @errores = @errores + 'La fecha de inicio no puede ser futura. ';
     IF @fecha_fin IS NOT NULL AND @fecha_fin < @fecha_inicio
         SET @errores = @errores + 'La fecha de fin no puede ser anterior a la fecha de inicio. ';
-    IF @motivo_egreso IS NULL OR LTRIM(RTRIM(@motivo_egreso)) = ''
-        SET @errores = @errores + 'El motivo de egreso de la asignación no puede ser vacío. ';
+
     
     IF @errores <> ''
         THROW 50001, @errores, 1;
