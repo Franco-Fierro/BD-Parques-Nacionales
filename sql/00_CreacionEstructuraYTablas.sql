@@ -49,6 +49,8 @@ BEGIN
 END
 
 
+
+
 ------------------ CREACION DE TABLAS -------------------
 
 --- Tablas que pertenecen al SCHEMA Parques ---
@@ -362,5 +364,18 @@ BEGIN
       CONSTRAINT CHK_Pago_monto CHECK (monto > 0),
       CONSTRAINT CHK_Pago_periodo_mes CHECK (periodo_mes BETWEEN 1 AND 12)
     )
+END
+GO
+
+--Tabla para log de errores de importacion
+IF OBJECT_ID('Parques.Log_Errores_Importacion', 'U') IS NULL
+BEGIN
+    CREATE TABLE Parques.Log_Errores_Importacion (
+        id_error INT PRIMARY KEY IDENTITY(1,1),
+        fecha DATETIME DEFAULT GETDATE(),
+        archivo VARCHAR(255),
+        registro_nombre VARCHAR(255),
+        motivo_error VARCHAR(255)
+    );
 END
 GO
