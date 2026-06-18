@@ -12,7 +12,7 @@
 -- Objetivo: definir la lógica de importación robusta para garantizar la integridad de los datos y registrar los errores de manera efectiva.
 ----------------------------------------------------------------
 
-USE Pruebas_Parques
+USE COM5600_G03
 GO
 
 ----------------------------------------------------------------

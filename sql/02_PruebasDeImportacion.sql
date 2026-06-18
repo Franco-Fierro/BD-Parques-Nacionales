@@ -11,7 +11,7 @@
 -- Descripcion: casos de uso para la importacion de datos desde archivos CSV
 -- Objetivo: validar la correcta importacion de datos y el manejo de errores
 ----------------------------------------------------------------
-USE Pruebas_Parques
+USE COM5600_G03
 GO
 ----------------------------------------------------------------
 
