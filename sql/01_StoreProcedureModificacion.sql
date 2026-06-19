@@ -521,3 +521,518 @@ BEGIN
     END CATCH
 END
 GO
+
+-- schema comercial
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Tarifario_parque
+    @id_parque INT,
+    @id_tipo_visitante INT,
+    @precio_actual decimal(10,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+       IF NOT EXISTS (SELECT 1 FROM Comercial.Tarifario_parque
+                   WHERE id_parque = @id_parque AND id_tipo_visitante = @id_tipo_visitante)
+        THROW 50001, 'No existe un tarifario para ese parque y tipo de visitante.', 1;
+
+        IF @precio_actual IS NULL OR @precio_actual < 0
+            THROW 50002, 'El precio actual no puede ser nulo ni negativo.', 1;
+
+        UPDATE Comercial.Tarifario_parque
+        SET precio_actual = @precio_actual
+        WHERE id_parque = @id_parque AND id_tipo_visitante = @id_tipo_visitante;
+
+        PRINT('Tarifario del parque actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Tipo_visitante
+    @id_tipo_visitante INT,
+    @descripcion VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Tipo_visitante WHERE id_tipo_visitante = @id_tipo_visitante)
+            THROW 50001, 'No existe un tipo de visitante con el Id proporcionado.', 1;
+
+         IF @descripcion IS NULL OR LEN(TRIM(@descripcion)) = 0
+            THROW 50002, 'La descripción es obligatoria.', 1;
+
+        IF LEN(@descripcion) > 50
+            THROW 50003, 'La descripción no puede superar los 50 caracteres.', 1;
+
+        IF EXISTS (
+            SELECT 1 FROM Comercial.Tipo_visitante
+            WHERE descripcion   = @descripcion
+            AND id_tipo_visitante <> @id_tipo_visitante
+        )
+            THROW 50004, 'Ya existe otro tipo de visitante con esa descripción.', 1;
+
+        UPDATE Comercial.Tipo_visitante
+        SET descripcion = @descripcion
+        WHERE id_tipo_visitante = @id_tipo_visitante;
+
+        PRINT('Tipo de visitante actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+        END TRY
+
+        BEGIN CATCH
+            IF @@TRANCOUNT > 0
+                ROLLBACK TRANSACTION;
+            THROW;
+        END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Punto_de_venta
+    @id_punto_de_venta INT,
+    @descripcion VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Punto_de_venta WHERE id_punto_de_venta = @id_punto_de_venta)
+            THROW 50001, 'No existe un punto de venta con el Id proporcionado.', 1;
+
+        IF @descripcion IS NULL OR LEN(TRIM(@descripcion)) = 0
+            THROW 50002, 'La descripción es obligatoria.', 1;
+
+        IF LEN(@descripcion) > 50
+            THROW 50003, 'La descripción no puede superar los 50 caracteres.', 1;
+
+        IF EXISTS (SELECT 1 FROM Comercial.Punto_de_venta
+                   WHERE descripcion = @descripcion AND id_punto_de_venta <> @id_punto_de_venta)
+            THROW 50004, 'Ya existe otro punto de venta con esa descripción.', 1;
+
+        UPDATE Comercial.Punto_de_venta
+        SET descripcion = TRIM(@descripcion)
+        WHERE id_punto_de_venta = @id_punto_de_venta;
+
+        PRINT('Punto de venta actualizado correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Forma_de_pago
+    @id_forma_de_pago INT,
+    @descripcion VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Forma_de_pago WHERE id_forma_de_pago = @id_forma_de_pago)
+            THROW 50001, 'No existe una forma de pago con el Id proporcionado.', 1;
+
+        IF @descripcion IS NULL OR LEN(TRIM(@descripcion)) = 0
+            THROW 50002, 'La descripción es obligatoria.', 1;
+
+        IF LEN(@descripcion) > 50
+            THROW 50003, 'La descripción no puede superar los 50 caracteres.', 1;
+
+        IF EXISTS (SELECT 1 FROM Comercial.Forma_de_pago
+                   WHERE descripcion = @descripcion AND id_forma_de_pago <> @id_forma_de_pago)
+            THROW 50004, 'Ya existe otra forma de pago con esa descripción.', 1;
+
+        UPDATE Comercial.Forma_de_pago
+        SET descripcion = TRIM(@descripcion)
+        WHERE id_forma_de_pago = @id_forma_de_pago;
+
+        PRINT('Forma de pago actualizada correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Venta
+    @id_venta INT,
+    @numero_factura VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Venta WHERE id_venta = @id_venta)
+            THROW 50001, 'No existe una venta con el Id proporcionado.', 1;
+
+        IF @numero_factura IS NULL OR LEN(TRIM(@numero_factura)) = 0
+            THROW 50002, 'El número de factura no puede estar vacío.', 1;
+
+        IF EXISTS (SELECT 1 FROM Comercial.Venta
+                   WHERE numero_factura = @numero_factura AND id_venta <> @id_venta)
+            THROW 50003, 'Ese número de factura ya pertenece a otra venta.', 1;
+
+        UPDATE Comercial.Venta
+        SET numero_factura = TRIM(@numero_factura)
+        WHERE id_venta = @id_venta;
+
+        PRINT('Número de factura corregido correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Entrada
+    @id_entrada INT,
+    @id_venta INT,
+    @id_tipo_visitante INT,
+    @fecha_acceso DATE,
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Entrada WHERE id_entrada = @id_entrada)
+            THROW 50001, 'No existe una entrada con el Id proporcionado.', 1;
+
+        UPDATE Comercial.Entrada
+        SET 
+            id_venta = ISNULL(@id_venta, id_venta),
+            id_tipo_visitante = ISNULL(@id_tipo_visitante, id_tipo_visitante),
+            fecha_acceso = ISNULL(@fecha_acceso, fecha_acceso)
+        WHERE id_entrada = @id_entrada;
+
+        PRINT('Entrada actualizada correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Ticket_actvidad
+    @id_ticket INT,
+    @id_turno INT
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Ticket_actividad WHERE id_ticket = @id_ticket)
+            THROW 50001, 'No existe un ticket de actividad con el Id proporcionado.', 1;
+
+        UPDATE Comercial.Ticket_actividad
+        SET 
+            id_turno = ISNULL(@id_turno, id_turno)
+        WHERE id_ticket = @id_ticket;
+
+        PRINT('Ticket de actividad actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Item_vendible
+    @id_item INT,
+    @tipo_item VARCHAR(20),
+    @id_entrada INT,
+    @id_ticket INT
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Item_vendible WHERE id_item = @id_item)
+            THROW 50001, 'No existe un item vendible con el Id proporcionado.', 1;
+
+        IF @tipo_item IS NULL OR LEN(TRIM(@tipo_item)) = 0
+            THROW 50002, 'El tipo de item no puede estar vacío.', 1;
+
+         IF LEN(@tipo_item) > 20
+            THROW 50003, 'El tipo de item no puede superar los 20 caracteres.', 1;
+
+        UPDATE Comercial.Item_vendible
+        SET 
+            tipo_item = ISNULL(@tipo_item, tipo_item),
+            id_entrada = id_entrada,
+            id_ticket = @id_ticket
+        WHERE id_item = @id_item;
+
+        PRINT('Item vendible actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Detalle_venta
+    @id_detalle_venta INT,
+    @id_venta INT,
+    @id_item INT,
+    @subtotal DECIMAL(10,2)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        IF NOT EXISTS (SELECT 1 FROM Comercial.Detalle_venta WHERE id_detalle_venta = @id_detalle_venta)
+            THROW 50001, 'No existe un detalle de venta con el Id proporcionado.', 1;
+
+        IF @subtotal IS NOT NULL AND @subtotal < 0
+            THROW 50002, 'El subtotal no puede ser negativo.', 1;
+
+        UPDATE Comercial.Detalle_venta
+        SET 
+            id_venta = ISNULL(@id_venta, id_venta),
+            id_item = ISNULL(@id_item, id_item),
+            subtotal = ISNULL(@subtotal, subtotal)
+        WHERE id_detalle_venta = @id_detalle_venta;
+
+        PRINT('Detalle de venta actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+
+
+--SCHEMAS Actividades
+
+CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Guia
+    @id_guia INT,
+    @dni CHAR(8),
+    @nombre VARCHAR(50),
+    @apellido VARCHAR(50),
+    @titulo VARCHAR(80),
+    @especialidad VARCHAR(80),
+    @vigencia_autorizacion DATE
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SET NOCOUNT ON;
+        IF NOT EXISTS (SELECT 1 FROM Actividades.Guia WHERE id_guia = @id_guia)
+            THROW 50001, 'No existe un guía con el Id proporcionado.', 1;
+
+        IF EXISTS (SELECT 1 FROM Actividades.Guia WHERE dni = @dni AND id_guia <> @id_guia)
+            THROW 50002, 'El DNI ingresado ya pertenece a otro guía.', 1;
+
+        UPDATE Actividades.Guia
+        SET 
+            dni = @dni,
+            nombre = TRIM(@nombre),
+            apellido = TRIM(@apellido),
+            titulo = TRIM(@titulo),
+            especialidad = TRIM(@especialidad),
+            vigencia_autorizacion = @vigencia_autorizacion
+        WHERE id_guia = @id_guia;
+
+        PRINT('Guía actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Tipo_actividad
+    @id_tipo_actividad INT,
+    @descripcion VARCHAR(50)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SET NOCOUNT ON;
+        IF NOT EXISTS (SELECT 1 FROM Actividades.Tipo_actividad WHERE id_tipo_actividad = @id_tipo_actividad)
+            THROW 50001, 'No existe un tipo de actividad con el Id proporcionado.', 1;
+
+         IF @descripcion IS NULL OR LEN(TRIM(@descripcion)) = 0
+            THROW 50002, 'La descripción es obligatoria.', 1;
+
+        IF LEN(@descripcion) > 50
+            THROW 50003, 'La descripción no puede superar los 50 caracteres.', 1;
+
+        IF EXISTS (
+            SELECT 1 FROM Actividades.Tipo_actividad
+            WHERE descripcion   = @descripcion
+            AND id_tipo_actividad <> @id_tipo_actividad
+        )
+            THROW 50004, 'Ya existe otro tipo de actividad con esa descripción.', 1;
+
+        UPDATE Actividades.Tipo_actividad
+        SET descripcion = @descripcion
+        WHERE id_tipo_actividad = @id_tipo_actividad;
+
+        PRINT('Tipo de actividad actualizado correctamente.');
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Actividad
+    @id_actividad INT,
+    @id_tipo_actividad INT = NULL,
+    @id_parque INT = NULL,
+    @nombre VARCHAR(80) = NULL,
+    @duracion_minutos INT = NULL,
+    @cupo_maximo INT = NULL,
+    @costo DECIMAL(10,2) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Actividades.Actividad WHERE id_actividad = @id_actividad)
+            THROW 50001, 'No existe una actividad con el Id proporcionado.', 1;
+
+        IF @id_tipo_actividad IS NOT NULL
+           AND NOT EXISTS (SELECT 1 FROM Actividades.Tipo_actividad WHERE id_tipo_actividad = @id_tipo_actividad)
+            THROW 50002, 'El tipo de actividad indicado no existe.', 1;
+
+        IF @id_parque IS NOT NULL
+           AND NOT EXISTS (SELECT 1 FROM Parques.Parque_nacional WHERE id_parque = @id_parque)
+            THROW 50003, 'El parque indicado no existe.', 1;
+
+        IF @nombre IS NOT NULL AND LEN(TRIM(@nombre)) = 0
+            THROW 50004, 'El nombre no puede estar vacío.', 1;
+
+        IF @duracion_minutos IS NOT NULL AND @duracion_minutos <= 0
+            THROW 50005, 'La duración debe ser un número positivo.', 1;
+
+        IF @cupo_maximo IS NOT NULL AND @cupo_maximo < 0
+            THROW 50006, 'El cupo máximo no puede ser negativo.', 1;
+
+        IF @costo IS NOT NULL AND @costo < 0
+            THROW 50007, 'El costo no puede ser negativo.', 1;
+
+        UPDATE Actividades.Actividad
+        SET id_tipo_actividad = ISNULL(@id_tipo_actividad, id_tipo_actividad),
+            id_parque         = ISNULL(@id_parque, id_parque),
+            nombre            = ISNULL(@nombre, nombre),
+            duracion_minutos  = ISNULL(@duracion_minutos, duracion_minutos),
+            cupo_maximo       = ISNULL(@cupo_maximo, cupo_maximo),
+            costo             = ISNULL(@costo, costo)
+        WHERE id_actividad = @id_actividad;
+
+        PRINT('Actividad actualizada correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Guias_por_actividad
+    @id_guia INT,
+    @id_actividad INT,
+    @rol VARCHAR(30) = NULL,
+    @fecha_asignacion DATE = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Actividades.Guias_por_actividad
+                       WHERE id_guia = @id_guia AND id_actividad = @id_actividad)
+            THROW 50001, 'No existe esa asignación de guía a la actividad.', 1;
+
+        IF @rol IS NOT NULL AND LEN(TRIM(@rol)) = 0
+            THROW 50002, 'El rol no puede estar vacío.', 1;
+
+        UPDATE Actividades.Guias_por_actividad
+        SET rol              = ISNULL(@rol, rol),
+            fecha_asignacion = ISNULL(@fecha_asignacion, fecha_asignacion)
+        WHERE id_guia = @id_guia AND id_actividad = @id_actividad;
+
+        PRINT('Asignación de guía actualizada correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Turno_actividad
+    @id_turno INT,
+    @fecha DATE = NULL,
+    @hora_inicio TIME = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Actividades.Turno_actividad WHERE id_turno = @id_turno)
+            THROW 50001, 'No existe un turno con el Id proporcionado.', 1;
+
+        IF @fecha IS NOT NULL AND @fecha < CAST(GETDATE() AS DATE)
+            THROW 50002, 'La fecha del turno no puede ser pasada.', 1;
+
+        UPDATE Actividades.Turno_actividad
+        SET fecha       = ISNULL(@fecha, fecha),
+            hora_inicio = ISNULL(@hora_inicio, hora_inicio)
+        WHERE id_turno = @id_turno;
+
+        PRINT('Turno actualizado correctamente.');
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
