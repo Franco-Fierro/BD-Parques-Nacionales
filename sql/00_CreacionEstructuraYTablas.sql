@@ -28,6 +28,7 @@ USE COM5600_G03
 GO
 
 ------------------ CREACION DE ESQUEMAS -------------------
+
 IF SCHEMA_ID('Parques') IS NULL
 BEGIN
     EXEC('CREATE SCHEMA Parques') --El SCHEMA Parques se vinculara con Parque_nacional, Ubicacion, Tipo_parque,Guardaparque, y Asignacion_guardaparque
@@ -49,8 +50,6 @@ BEGIN
 END
 
 
-
-
 ------------------ CREACION DE TABLAS -------------------
 
 --- Tablas que pertenecen al SCHEMA Parques ---
@@ -59,7 +58,7 @@ IF OBJECT_ID('Parques.Ubicacion','U') IS NULL
 BEGIN
     CREATE TABLE Parques.Ubicacion (
       id_ubicacion INT PRIMARY KEY IDENTITY(1,1),
-      provincia VARCHAR(50) NOT NULL,
+      provincia VARCHAR(60) NOT NULL,
       region VARCHAR(80) NOT NULL,
       latitud DECIMAL(8,6) NOT NULL,
       longitud DECIMAL(9,6) NOT NULL
