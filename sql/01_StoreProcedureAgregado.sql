@@ -75,19 +75,6 @@ BEGIN
     SET @id_ubicacion = SCOPE_IDENTITY();
 END
 GO
-    IF @latitud IS NULL OR @latitud < -90 OR @latitud > 90
-        SET @errores = @errores + 'La latitud debe estar entre -90 y 90. ';
-    IF @longitud IS NULL OR @longitud < -180 OR @longitud > 180
-        SET @errores = @errores + 'La longitud debe estar entre -180 y 180. ';
-        
-    IF @errores <> ''
-        THROW 50001, @errores, 1;
-
-    INSERT INTO Parques.Ubicacion (provincia, region, latitud, longitud)
-    VALUES (@provincia, @region, @latitud, @longitud);
-    SET @id_ubicacion = SCOPE_IDENTITY();
-END
-GO
 
 --Agregar Tipo de Parque
 

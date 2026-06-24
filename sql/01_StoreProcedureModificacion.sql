@@ -212,7 +212,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Parques.SP_Cambiar_Estado_Guardaparque
+CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Estado_Guardaparque
     @id_guardaparque INT,
     @nuevo_estado CHAR(20)
 AS
@@ -455,7 +455,8 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Concesiones.SP_Cambiar_Estado_Concesion
+
+CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_Concesion
     @id_concesion INT,
     @id_estado_concesion INT
 AS
@@ -467,29 +468,25 @@ BEGIN
         IF NOT EXISTS (SELECT 1 FROM Concesiones.Concesion WHERE id_concesion = @id_concesion)
             THROW 50001, 'No existe una concesion con el Id proporcionado.', 1;
 
-        IF NOT EXISTS (SELECT 1 FROM Concesiones.Estado_concesion WHERE id_concesion = @id_concesion)
+        IF NOT EXISTS (SELECT 1 FROM Concesiones.Estado_concesion WHERE id_estado_concesion = @id_estado_concesion)
             THROW 50002, 'El estado de concesion indicado no existe en el sistema.', 1;
 
         UPDATE Concesiones.Concesion
-        SET 
-            id_estado_concesion = @id_estado_concesion
-        WHERE 
-            id_concesion = @id_concesion;
+        SET id_estado_concesion = @id_estado_concesion
+        WHERE id_concesion = @id_concesion;
 
         PRINT('Estado de concesion actualizado correctamente.');
-        
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         THROW;
     END CATCH
 END
 GO
 
 
-CREATE OR ALTER PROCEDURE Concesiones.SP_Cambiar_Estado_Pago_Canon
+CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_Pago_Canon
     @id_pago INT,
     @id_estado_pago INT
 AS
@@ -524,7 +521,7 @@ GO
 
 -- schema comercial
 
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Tarifario_parque
+CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Tarifario_parque
     @id_parque INT,
     @id_tipo_visitante INT,
     @precio_actual decimal(10,2)
@@ -557,7 +554,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Tipo_visitante
+CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Tipo_visitante
     @id_tipo_visitante INT,
     @descripcion VARCHAR(50)
 AS
@@ -599,7 +596,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Punto_de_venta
+CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Punto_de_venta
     @id_punto_de_venta INT,
     @descripcion VARCHAR(50)
 AS
@@ -633,7 +630,7 @@ BEGIN
     END CATCH
 END
 GO
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Forma_de_pago
+CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Forma_de_pago
     @id_forma_de_pago INT,
     @descripcion VARCHAR(50)
 AS
@@ -669,176 +666,9 @@ END
 GO
 
 
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Venta
-    @id_venta INT,
-    @numero_factura VARCHAR(20)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRANSACTION;
-    BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Comercial.Venta WHERE id_venta = @id_venta)
-            THROW 50001, 'No existe una venta con el Id proporcionado.', 1;
-
-        IF @numero_factura IS NULL OR LEN(TRIM(@numero_factura)) = 0
-            THROW 50002, 'El número de factura no puede estar vacío.', 1;
-
-        IF EXISTS (SELECT 1 FROM Comercial.Venta
-                   WHERE numero_factura = @numero_factura AND id_venta <> @id_venta)
-            THROW 50003, 'Ese número de factura ya pertenece a otra venta.', 1;
-
-        UPDATE Comercial.Venta
-        SET numero_factura = TRIM(@numero_factura)
-        WHERE id_venta = @id_venta;
-
-        PRINT('Número de factura corregido correctamente.');
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-        THROW;
-    END CATCH
-END
-GO
-
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Entrada
-    @id_entrada INT,
-    @id_venta INT,
-    @id_tipo_visitante INT,
-    @fecha_acceso DATE,
-AS
-BEGIN
-    BEGIN TRANSACTION;
-    BEGIN TRY
-
-        IF NOT EXISTS (SELECT 1 FROM Comercial.Entrada WHERE id_entrada = @id_entrada)
-            THROW 50001, 'No existe una entrada con el Id proporcionado.', 1;
-
-        UPDATE Comercial.Entrada
-        SET 
-            id_venta = ISNULL(@id_venta, id_venta),
-            id_tipo_visitante = ISNULL(@id_tipo_visitante, id_tipo_visitante),
-            fecha_acceso = ISNULL(@fecha_acceso, fecha_acceso)
-        WHERE id_entrada = @id_entrada;
-
-        PRINT('Entrada actualizada correctamente.');
-        
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        THROW;
-    END CATCH
-END
-GO
-
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Ticket_actvidad
-    @id_ticket INT,
-    @id_turno INT
-AS
-BEGIN
-    BEGIN TRANSACTION;
-    BEGIN TRY
-
-        IF NOT EXISTS (SELECT 1 FROM Comercial.Ticket_actividad WHERE id_ticket = @id_ticket)
-            THROW 50001, 'No existe un ticket de actividad con el Id proporcionado.', 1;
-
-        UPDATE Comercial.Ticket_actividad
-        SET 
-            id_turno = ISNULL(@id_turno, id_turno)
-        WHERE id_ticket = @id_ticket;
-
-        PRINT('Ticket de actividad actualizado correctamente.');
-        
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        THROW;
-    END CATCH
-END
-GO
-
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Item_vendible
-    @id_item INT,
-    @tipo_item VARCHAR(20),
-    @id_entrada INT,
-    @id_ticket INT
-AS
-BEGIN
-    BEGIN TRANSACTION;
-    BEGIN TRY
-
-        IF NOT EXISTS (SELECT 1 FROM Comercial.Item_vendible WHERE id_item = @id_item)
-            THROW 50001, 'No existe un item vendible con el Id proporcionado.', 1;
-
-        IF @tipo_item IS NULL OR LEN(TRIM(@tipo_item)) = 0
-            THROW 50002, 'El tipo de item no puede estar vacío.', 1;
-
-         IF LEN(@tipo_item) > 20
-            THROW 50003, 'El tipo de item no puede superar los 20 caracteres.', 1;
-
-        UPDATE Comercial.Item_vendible
-        SET 
-            tipo_item = ISNULL(@tipo_item, tipo_item),
-            id_entrada = id_entrada,
-            id_ticket = @id_ticket
-        WHERE id_item = @id_item;
-
-        PRINT('Item vendible actualizado correctamente.');
-        
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        THROW;
-    END CATCH
-END
-GO
-
-CREATE OR ALTER PROCEDURE Comercial.SP_Cambiar_Detalle_venta
-    @id_detalle_venta INT,
-    @id_venta INT,
-    @id_item INT,
-    @subtotal DECIMAL(10,2)
-AS
-BEGIN
-    BEGIN TRANSACTION;
-    BEGIN TRY
-
-        IF NOT EXISTS (SELECT 1 FROM Comercial.Detalle_venta WHERE id_detalle_venta = @id_detalle_venta)
-            THROW 50001, 'No existe un detalle de venta con el Id proporcionado.', 1;
-
-        IF @subtotal IS NOT NULL AND @subtotal < 0
-            THROW 50002, 'El subtotal no puede ser negativo.', 1;
-
-        UPDATE Comercial.Detalle_venta
-        SET 
-            id_venta = ISNULL(@id_venta, id_venta),
-            id_item = ISNULL(@id_item, id_item),
-            subtotal = ISNULL(@subtotal, subtotal)
-        WHERE id_detalle_venta = @id_detalle_venta;
-
-        PRINT('Detalle de venta actualizado correctamente.');
-        
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        THROW;
-    END CATCH
-END
-GO
-
-
-
 --SCHEMAS Actividades
 
-CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Guia
+CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Guia
     @id_guia INT,
     @dni CHAR(8),
     @nombre VARCHAR(50),
@@ -879,7 +709,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Tipo_actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Tipo_actividad
     @id_tipo_actividad INT,
     @descripcion VARCHAR(50)
 AS
@@ -918,7 +748,7 @@ BEGIN
     END CATCH
 END
 GO
-CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Actividad
     @id_actividad INT,
     @id_tipo_actividad INT = NULL,
     @id_parque INT = NULL,
@@ -974,7 +804,7 @@ END
 GO
 
 
-CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Guias_por_actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Guias_por_actividad
     @id_guia INT,
     @id_actividad INT,
     @rol VARCHAR(30) = NULL,
@@ -1007,7 +837,7 @@ END
 GO
 
 
-CREATE OR ALTER PROCEDURE Actividades.SP_Cambiar_Turno_actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Turno_actividad
     @id_turno INT,
     @fecha DATE = NULL,
     @hora_inicio TIME = NULL

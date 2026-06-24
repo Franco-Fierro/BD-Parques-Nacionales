@@ -30,7 +30,7 @@ Nombre: Parques.Borrar_Ubicacion
 Propósito: Eliminar una ubicación, verificando que no existan parques nacionales vinculados a ella.
 Parámetros: @id_ubicacion (INT) - ID de la ubicación a eliminar.
 */
-CREATE OR ALTER PROCEDURE Parques.Borrar_Ubicacion
+CREATE OR ALTER PROCEDURE Parques.SP_Borrar_Ubicacion
 	@id_ubicacion INT
 AS
 BEGIN
@@ -65,7 +65,7 @@ Nombre: Parques.Borrar_Tipo_Parque
 Propósito: Eliminar un tipo de parque, verificando que no existan parques nacionales vinculados a él.
 Parámetros: @id_tipo_parque (INT) - ID del tipo de parque a eliminar.
 */
-CREATE OR ALTER PROCEDURE Parques.Borrar_Tipo_Parque
+CREATE OR ALTER PROCEDURE Parques.SP_Borrar_Tipo_Parque
 	@id_tipo_parque INT
 AS
 BEGIN
@@ -102,7 +102,7 @@ Nombre: Actividades.Borrar_Tipo_Actividad
 Propósito: Eliminar un tipo de actividad, verificando que no existan actividades vinculadas a él.
 Parámetros: @id_tipo_actividad (INT) - ID del tipo de actividad a eliminar.
 */
-CREATE OR ALTER PROCEDURE Actividades.Borrar_Tipo_Actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Borrar_Tipo_Actividad
 	@id_tipo_actividad INT
 AS
 BEGIN
@@ -139,7 +139,7 @@ Propósito: Eliminar la asignación de un guía a una actividad, verificando que
 Parámetros: @id_guia (INT) - ID del guía a eliminar de la actividad.
            @id_actividad (INT) - ID de la actividad de la cual eliminar el guía.
 */
-CREATE OR ALTER PROCEDURE Actividades.Borrar_Guia_Por_Actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Borrar_Guia_Por_Actividad
     @id_guia INT, @id_actividad INT
 AS
 BEGIN
@@ -181,7 +181,7 @@ Nombre: Actividades.Borrar_Turno_Actividad
 Propósito: Eliminar un turno de actividad, verificando que no existan tickets vendidos asociados a ese turno.
 Parámetros: @id_turno (INT) - ID del turno de actividad a eliminar.
 */
-CREATE OR ALTER PROCEDURE Actividades.Borrar_Turno_Actividad
+CREATE OR ALTER PROCEDURE Actividades.SP_Borrar_Turno_Actividad
     @id_turno INT
 AS
 BEGIN
@@ -215,7 +215,7 @@ Nombre: Comercial.Borrar_Punto_de_venta
 Propósito: Eliminar un punto de venta, verificando que no existan ventas asociadas a ese punto de venta.
 Parámetros: @id_punto_de_venta (INT) - ID del punto de venta a eliminar.
 */
-CREATE OR ALTER PROCEDURE Comercial.Borrar_Punto_de_venta
+CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Punto_de_venta
 	@id_punto_de_venta INT
 AS
 BEGIN
@@ -246,7 +246,7 @@ Nombre: Comercial.Borrar_Forma_de_pago
 Propósito: Eliminar una forma de pago, verificando que no existan ventas asociadas a esa forma de pago.
 Parámetros: @id_forma_de_pago (INT) - ID de la forma de pago a eliminar.
 */
-CREATE OR ALTER PROCEDURE Comercial.Borrar_Forma_de_pago
+CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Forma_de_pago
 	@id_forma_de_pago INT
 AS
 BEGIN
@@ -276,7 +276,7 @@ Nombre: Comercial.Borrar_Tipo_visitante
 Propósito: Eliminar un tipo de visitante, verificando que no existan entradas o tarifarios asociados a ese tipo de visitante.
 Parámetros: @id_tipo_visitante (INT) - ID del tipo de visitante a eliminar.
 */
-CREATE OR ALTER PROCEDURE Comercial.Borrar_Tipo_visitante
+CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Tipo_visitante
 	@id_tipo_visitante INT
 AS
 BEGIN
@@ -317,7 +317,7 @@ Nombre: Comercial.Borrar_Tarifario_parque
 Propósito: Eliminar un tarifario de parque, verificando que no existan entradas asociadas a ese tarifario.
 Parámetros: @id_tarifario (INT) - ID del tarifario de parque a eliminar.
 */
-CREATE OR ALTER PROCEDURE Comercial.Borrar_Tarifario_parque
+CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Tarifario_parque
     @id_tarifario INT
 AS
 BEGIN
@@ -347,7 +347,7 @@ Nombre: Comercial.Borrar_Item_vendible
 Propósito: Eliminar un item vendible, verificando que no existan detalles de venta asociados.
 Parámetros: @id_item (INT) - ID del item vendible a eliminar.
 */
-CREATE OR ALTER PROCEDURE Comercial.Borrar_Item_vendible
+CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Item_vendible
     @id_item INT
 AS
 BEGIN
@@ -382,7 +382,7 @@ Nombre: Concesiones.Borrar_Estado_concesion
 Propósito: Eliminar un estado de concesion, verificando que no existan concesiones asociadas a ese estado.
 Parámetros: @id_estado_concesion (INT) - ID del estado de concesion a eliminar.
 */
-CREATE OR ALTER PROCEDURE Concesiones.Borrar_Estado_concesion
+CREATE OR ALTER PROCEDURE Concesiones.SP_Borrar_Estado_concesion
     @id_estado_concesion INT
 AS
 BEGIN
@@ -416,7 +416,7 @@ Nombre: Concesiones.Borrar_Estado_pago
 Propósito: Eliminar un estado de pago, verificando que no existan pagos asociados a ese estado.
 Parámetros: @id_estado_pago (INT) - ID del estado de pago a eliminar.
 */
-CREATE OR ALTER PROCEDURE Concesiones.Borrar_Estado_pago
+CREATE OR ALTER PROCEDURE Concesiones.SP_Borrar_Estado_pago
     @id_estado_pago INT
 AS
 BEGIN
