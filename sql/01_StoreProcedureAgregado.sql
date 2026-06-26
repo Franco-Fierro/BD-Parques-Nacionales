@@ -4,7 +4,7 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
---QUISPE BARJA, SERGIO DANIEL
+
 
 --Objetivo: definir los stored procedures para el agregado de datos a la base de datos
 

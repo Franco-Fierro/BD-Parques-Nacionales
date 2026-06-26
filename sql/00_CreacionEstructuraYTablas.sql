@@ -5,7 +5,7 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
---QUISPE BARJA, SERGIO DANIEL
+
 ----------------------------------------------------------------
 
 --Objetivo: Definir la estructura relacional para la gestion de Parques Nacionales. Mediante la creaci�n de tablas y restricciones de integridad.

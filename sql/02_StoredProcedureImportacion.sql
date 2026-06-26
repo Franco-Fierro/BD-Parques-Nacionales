@@ -5,7 +5,7 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
---QUISPE BARJA, SERGIO DANIEL
+
 ----------------------------------------------------------------
 -- Nombre del archivo: 02_StoredProcedureImportacion.sql
 -- Descripcion: procedimientos almacenados para la importacion de datos desde archivos, con validaciones, limpieza y manejo de errores.

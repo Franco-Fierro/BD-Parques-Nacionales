@@ -5,7 +5,7 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
---QUISPE BARJA, SERGIO DANIEL
+
 ----------------------------------------------------------------
 -- Nombre del archivo: 02_PruebasDeImportacion.sql
 -- Descripcion: casos de uso para la importacion de datos desde archivos CSV

@@ -5,7 +5,7 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
---QUISPE BARJA, SERGIO DANIEL
+
 ----------------------------------------------------------------
 --ARCHIVO: 01_StoreProcedureBorrado.sql
 --PROPOSITO: Contiene los procedimientos almacenados para eliminar registros de las tablas, con validaciones de integridad referencial.
