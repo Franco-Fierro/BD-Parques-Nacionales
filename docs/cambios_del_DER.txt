@@ -1,0 +1,5 @@
+CAMBIOS EN EL DER
+29/05/2026 – Se agregaron las tablas tipo_parque, Ubicación, tipo_actividad, e item_vendible. Ademas, se cambió el nombre de la tabla instacia_actividad por turno_activiad.
+07/06/2026 – Se agregaron las tablas estado_pago, estado_concesion, guias_por_actividad, punto_de_venta y forma_de_pago.
+15/06/2026 – Se cambió en la tabla Ubicación Localidad por región.
+20/06/2026 - Revision y cambio de tipos de datos.
