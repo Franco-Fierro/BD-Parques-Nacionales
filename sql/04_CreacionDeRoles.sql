@@ -41,31 +41,31 @@ GO
 
 DENY INSERT, UPDATE, DELETE ON SCHEMA::Parques TO 
     Rol_Secretario_Administrativo, Rol_Administrador_Parque, 
-    Rol_GuardaParque, Rol_Administrador_GuardaParques, 
-    Rol_Administrador_Actividades, Rol_Administrador_Guias, Rol_Guia, 
-    Rol_Administrador_Concesiones, Rol_Concesionarios, 
-    Rol_Boleteria, Rol_Importador, Rol_Comprador;
+    Rol_Administrador_GuardaParques, 
+    Rol_Administrador_Actividades, Rol_Administrador_Guias, 
+    Rol_Administrador_Concesiones, 
+    Rol_Boleteria, Rol_Importador;
 
 DENY INSERT, UPDATE, DELETE ON SCHEMA::Actividades TO 
     Rol_Secretario_Administrativo, Rol_Administrador_Parque, 
-    Rol_GuardaParque, Rol_Administrador_GuardaParques, 
-    Rol_Administrador_Actividades, Rol_Administrador_Guias, Rol_Guia, 
-    Rol_Administrador_Concesiones, Rol_Concesionarios, 
-    Rol_Boleteria, Rol_Importador, Rol_Comprador;
+    Rol_Administrador_GuardaParques, 
+    Rol_Administrador_Actividades, Rol_Administrador_Guias, 
+    Rol_Administrador_Concesiones, 
+    Rol_Boleteria, Rol_Importador;
 
 DENY INSERT, UPDATE, DELETE ON SCHEMA::Comercial TO 
     Rol_Secretario_Administrativo, Rol_Administrador_Parque, 
-    Rol_GuardaParque, Rol_Administrador_GuardaParques, 
-    Rol_Administrador_Actividades, Rol_Administrador_Guias, Rol_Guia, 
-    Rol_Administrador_Concesiones, Rol_Concesionarios, 
-    Rol_Boleteria, Rol_Importador, Rol_Comprador;
+    Rol_Administrador_GuardaParques, 
+    Rol_Administrador_Actividades, Rol_Administrador_Guias, 
+    Rol_Administrador_Concesiones, 
+    Rol_Boleteria, Rol_Importador;
 
 DENY INSERT, UPDATE, DELETE ON SCHEMA::Concesiones TO 
     Rol_Secretario_Administrativo, Rol_Administrador_Parque, 
-    Rol_GuardaParque, Rol_Administrador_GuardaParques, 
-    Rol_Administrador_Actividades, Rol_Administrador_Guias, Rol_Guia, 
-    Rol_Administrador_Concesiones, Rol_Concesionarios, 
-    Rol_Boleteria, Rol_Importador, Rol_Comprador;
+    Rol_Administrador_GuardaParques, 
+    Rol_Administrador_Actividades, Rol_Administrador_Guias, 
+    Rol_Administrador_Concesiones, 
+    Rol_Boleteria, Rol_Importador;
 GO
 
 -- ==========================================
@@ -166,8 +166,8 @@ GRANT SELECT ON SCHEMA::Concesiones TO Rol_Auditor;
 -- Rol_Importador
 -- Permite importar datos desde archivos externos.
 -- ==========================================
-GRANT EXECUTE ON Parques.SP_ImportarParques TO Rol_Importador;
-GRANT EXECUTE ON Actividades.SP_ImportarActividades TO Rol_Importador;
+--GRANT EXECUTE ON Parques.SP_ImportarParques TO Rol_Importador;
+--GRANT EXECUTE ON Actividades.SP_ImportarActividades TO Rol_Importador;
 
 
 PRINT 'Asignación de permisos completada.';

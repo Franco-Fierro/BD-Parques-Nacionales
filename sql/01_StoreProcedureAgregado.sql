@@ -5,20 +5,18 @@
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
 
-
 --Objetivo: definir los stored procedures para el agregado de datos a la base de datos
 
 USE COM5600_G03;
 GO
 
 --Agregar Parque Nacional
-
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarParque
     @id_Ubicacion    int,
-    @id_Tipo_parque  int,
+    @id_Tipo_parque  tinyint, -- Optimizado a TINYINT
     @nombre          varchar(100),
     @superficie      decimal(12,2),
-    @id_parque_nuevo int OUTPUT          
+    @id_parque_nuevo smallint OUTPUT -- Optimizado a SMALLINT        
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -46,13 +44,12 @@ GO
 
 
 --Agregar Ubicacion
-
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarUbicacion
     @provincia       varchar(50),
-    @region           varchar(80),
-    @latitud           decimal(8,6),
-    @longitud          decimal(9,6),
-    @id_ubicacion int OUTPUT
+    @region          varchar(80),
+    @latitud         decimal(9,6), -- Optimizado a DECIMAL(9,6)
+    @longitud        decimal(9,6), -- Optimizado a DECIMAL(9,6)
+    @id_ubicacion    int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -77,10 +74,9 @@ END
 GO
 
 --Agregar Tipo de Parque
-
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarTipoParque
     @descripcion      varchar(50),
-    @id_tipo_parque int OUTPUT  
+    @id_tipo_parque   tinyint OUTPUT  -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -99,11 +95,11 @@ GO
 
 --Agregar guardaparque
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarGuardaparque
-    @dni             char(8),
+    @dni             varchar(10), -- Optimizado a VARCHAR(10)
     @nombre          varchar(50),
     @apellido        varchar(50),
-    @fecha_ingreso      date,
-    @estado          char(20),
+    @fecha_ingreso   date,
+    @estado          varchar(10), -- Optimizado a VARCHAR(10)
     @id_guardaparque int OUTPUT
 AS
 BEGIN
@@ -113,8 +109,8 @@ BEGIN
     IF EXISTS (SELECT 1 FROM Parques.Guardaparque WHERE dni = @dni)
         SET @errores = @errores + 'ya existe un guardaparque con el mismo DNI. ';
 
-    IF @dni IS NULL OR LTRIM(RTRIM(@dni)) = '' OR LEN(@dni) <> 8
-        SET @errores = @errores + 'El DNI del guardaparque debe ser un número de 8 dígitos. ';
+    IF @dni IS NULL OR LTRIM(RTRIM(@dni)) = '' OR LEN(@dni) < 7 OR LEN(@dni) > 10
+        SET @errores = @errores + 'El DNI del guardaparque debe tener entre 7 y 10 caracteres. ';
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = ''
         SET @errores = @errores + 'El nombre del guardaparque no puede ser vacío. ';
     IF @apellido IS NULL OR LTRIM(RTRIM(@apellido)) = ''
@@ -122,7 +118,7 @@ BEGIN
     IF @fecha_ingreso > CAST(GETDATE() AS DATE)
         SET @errores = @errores + 'La fecha de ingreso no puede ser futura. ';
     IF @estado IS NULL OR LTRIM(RTRIM(@estado)) = '' OR @estado NOT IN ('Activo', 'Inactivo')
-        SET @errores = @errores + 'El estado del guardaparque no puede ser vacío. ';
+        SET @errores = @errores + 'El estado del guardaparque no puede ser vacío o inválido. ';
     
     IF @errores <> ''
         THROW 50001, @errores, 1;
@@ -134,10 +130,9 @@ END
 GO
 
 --Agregar Guardaparque a Parque
-
 CREATE OR ALTER PROCEDURE Parques.SP_AgregarGuardaparqueAParque
     @id_guardaparque int,
-    @id_parque int,
+    @id_parque smallint, -- Optimizado a SMALLINT
     @fecha_inicio date,
     @fecha_fin date,
     @motivo_egreso varchar(100) = NULL,
@@ -155,7 +150,6 @@ BEGIN
         SET @errores = @errores + 'La fecha de inicio no puede ser futura. ';
     IF @fecha_fin IS NOT NULL AND @fecha_fin < @fecha_inicio
         SET @errores = @errores + 'La fecha de fin no puede ser anterior a la fecha de inicio. ';
-
     
     IF @errores <> ''
         THROW 50001, @errores, 1;
@@ -164,20 +158,18 @@ BEGIN
     VALUES (@id_guardaparque, @id_parque, @fecha_inicio, @fecha_fin, @motivo_egreso);
     SET @id_asignacion = SCOPE_IDENTITY();
 END
-
 GO
 
 
 --Agregar Guia
-
 CREATE OR ALTER PROCEDURE Actividades.SP_AgregarGuia
-    @dni             char(8),
+    @dni             varchar(10), -- Optimizado a VARCHAR(10)
     @nombre          varchar(50),
     @apellido        varchar(50),
-    @titulo           varchar(80),
-    @especialidad       varchar(80),
+    @titulo          varchar(80),
+    @especialidad    varchar(80),
     @vigencia_autorizacion date,
-    @id_guia int OUTPUT
+    @id_guia         int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -186,8 +178,8 @@ BEGIN
     IF EXISTS (SELECT 1 FROM Actividades.Guia WHERE dni = @dni)
         SET @errores = @errores + 'ya existe un guía con el mismo DNI. ';
 
-    IF @dni IS NULL OR LTRIM(RTRIM(@dni)) = '' OR LEN(@dni) <> 8
-        SET @errores = @errores + 'El DNI del guía debe ser un número de 8 dígitos. ';
+    IF @dni IS NULL OR LTRIM(RTRIM(@dni)) = '' OR LEN(@dni) < 7 OR LEN(@dni) > 10
+        SET @errores = @errores + 'El DNI del guía debe tener entre 7 y 10 caracteres. ';
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = ''
         SET @errores = @errores + 'El nombre del guía no puede ser vacío. ';
     IF @apellido IS NULL OR LTRIM(RTRIM(@apellido)) = ''
@@ -206,10 +198,9 @@ GO
 
 
 --Agregar Tipo de Actividad
-
 CREATE OR ALTER PROCEDURE Actividades.SP_AgregarTipoActividad
     @descripcion      varchar(50),
-    @id_tipo_actividad int OUTPUT
+    @id_tipo_actividad tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -229,13 +220,13 @@ GO
 
 --Agregar Actividad
 CREATE OR ALTER PROCEDURE Actividades.SP_AgregarActividad
-    @id_tipo_actividad int,
-    @id_parque int,
-    @nombre varchar(80),
-    @duracion_minutos int,
-    @cupo_maximo int,
-    @costo decimal(10,2),  
-    @id_actividad int OUTPUT
+    @id_tipo_actividad tinyint, -- Optimizado a TINYINT
+    @id_parque         smallint, -- Optimizado a SMALLINT
+    @nombre            varchar(80),
+    @duracion_minutos  smallint, -- Optimizado a SMALLINT
+    @cupo_maximo       smallint, -- Optimizado a SMALLINT
+    @costo             decimal(10,2),  
+    @id_actividad      int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -265,7 +256,6 @@ GO
 
 
 --Agregar Guia por activid
-
 CREATE OR ALTER PROCEDURE Actividades.SP_AgregarGuiaPorActividad
     @id_guia int,
     @id_actividad int,
@@ -296,11 +286,10 @@ END
 GO
 
 --agregar turno actividad
-
 CREATE OR ALTER PROCEDURE Actividades.SP_AgregarTurnoActividad
     @id_actividad int,
     @fecha date,
-    @hora_inicio time,
+    @hora_inicio time(0), -- Optimizado a TIME(0)
     @id_turno int OUTPUT
 AS
 BEGIN
@@ -325,7 +314,7 @@ GO
 --Agregar Tipo Visitante
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarTipoVisitante
     @descripcion varchar(50),
-    @id_tipo_visitante int OUTPUT
+    @id_tipo_visitante tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -344,12 +333,11 @@ GO
 
 
 --Agregar Tarifario del parque
-
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarTarifarioParque
-    @id_parque int,
-    @id_tipo_visitante int,
-    @precio_actual decimal(10,2),
-    @id_tarifario int OUTPUT
+    @id_parque         smallint, -- Optimizado a SMALLINT
+    @id_tipo_visitante tinyint,  -- Optimizado a TINYINT
+    @precio_actual     decimal(10,2),
+    @id_tarifario      int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -374,10 +362,9 @@ END
 GO
 
 --Agregar Punto de venta
-
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarPuntoDeVenta
-    @descripcion varchar(50),
-    @id_punto_de_venta int OUTPUT
+    @descripcion       varchar(50),
+    @id_punto_de_venta tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -395,10 +382,9 @@ END
 GO
 
 --Agregar Forma de pago
-
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarFormaDePago
-    @descripcion varchar(50),
-    @id_forma_de_pago int OUTPUT
+    @descripcion       varchar(50),
+    @id_forma_de_pago  tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -416,14 +402,13 @@ END
 GO
 
 --Agregar Venta
-
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarVenta
-    @id_punto_de_venta int,
-    @id_forma_de_pago int,
-    @numero_factura varchar(20),
-    @fecha_emision datetime,
-    @total decimal(10,2),
-    @id_venta int OUTPUT
+    @id_punto_de_venta tinyint, -- Optimizado a TINYINT
+    @id_forma_de_pago  tinyint, -- Optimizado a TINYINT
+    @numero_factura    varchar(20),
+    @fecha_emision     datetime,
+    @total             decimal(10,2),
+    @id_venta          int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -450,12 +435,11 @@ END
 GO
 
 --Agregar Entrada
-
 CREATE OR ALTER PROCEDURE Comercial.SP_AgregarEntrada
-    @id_parque int,
-    @id_tipo_visitante int,
-    @fecha_acceso date,
-    @id_entrada int OUTPUT
+    @id_parque         smallint, -- Optimizado a SMALLINT
+    @id_tipo_visitante tinyint,  -- Optimizado a TINYINT
+    @fecha_acceso      date,
+    @id_entrada        int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -507,18 +491,15 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE @errores varchar(1000) = '';
-    IF @tipo_item NOT IN ('Entrada', 'Ticket')
-        SET @errores = @errores + 'El tipo de item vendible debe ser "Entrada" o "Ticket". ';
 
     IF @tipo_item = 'Entrada' AND NOT EXISTS (SELECT 1 FROM Comercial.Entrada WHERE id_entrada = @id_entrada)
         SET @errores = @errores + 'La entrada indicada no existe. ';
     IF @tipo_item = 'Entrada' AND @id_ticket IS NOT NULL
         SET @errores = @errores + 'Si el item es una entrada, no debe indicarse un ticket. ';
-    IF @tipo_item = 'Ticket' AND NOT EXISTS (SELECT 1 FROM Comercial.Ticket_actividad WHERE id_ticket = @id_ticket)
+    IF @tipo_item = 'Ticket Actividad' AND NOT EXISTS (SELECT 1 FROM Comercial.Ticket_actividad WHERE id_ticket = @id_ticket)
         SET @errores = @errores + 'El ticket de actividad indicado no existe. ';
-    IF @tipo_item = 'Ticket' AND @id_entrada IS NOT NULL
+    IF @tipo_item = 'Ticket Actividad' AND @id_entrada IS NOT NULL
         SET @errores = @errores + 'Si el item es un ticket de actividad, no debe indicarse una entrada. ';
-    
     
     IF @errores <> ''
         THROW 50001, @errores, 1;
@@ -557,12 +538,11 @@ END
 GO
 
 --Agregar Empresa
-
 CREATE OR ALTER PROCEDURE Concesiones.SP_AgregarEmpresa
-    @razon_social varchar(120),
-    @cuit char(11),
+    @razon_social    varchar(120),
+    @cuit            char(11), -- Optimizado a CHAR(11)
     @rubro_principal varchar(80),
-    @id_empresa int OUTPUT
+    @id_empresa      int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -589,8 +569,8 @@ GO
 
 --Agregar Estado concesion
 CREATE OR ALTER PROCEDURE Concesiones.SP_AgregarEstadoConcesion
-    @descripcion varchar(50),
-    @id_estado_concesion int OUTPUT
+    @descripcion         varchar(50),
+    @id_estado_concesion tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -609,13 +589,13 @@ GO
 
 --agregar Concesion
 CREATE OR ALTER PROCEDURE Concesiones.SP_AgregarConcesion
-    @id_estado_concesion int,
-    @id_parque int,
-    @id_empresa int,
-    @fecha_inicio date,
-    @fecha_fin date,
-    @monto_alquiler decimal(12,2),
-    @id_concesion int OUTPUT    
+    @id_estado_concesion tinyint,  -- Optimizado a TINYINT
+    @id_parque           smallint, -- Optimizado a SMALLINT
+    @id_empresa          int,
+    @fecha_inicio        date,
+    @fecha_fin           date,
+    @monto_alquiler      decimal(12,2),
+    @id_concesion        int OUTPUT    
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -645,8 +625,8 @@ GO
 
 --Agregar Estado pago
 CREATE OR ALTER PROCEDURE Concesiones.SP_AgregarEstadoPago
-    @descripcion varchar(50),
-    @id_estado_pago int OUTPUT
+    @descripcion    varchar(50),
+    @id_estado_pago tinyint OUTPUT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -665,13 +645,13 @@ GO
 
 --Agregar Pago canon
 CREATE OR ALTER PROCEDURE Concesiones.SP_AgregarPagoCanon
-    @id_concesion int,
-    @id_estado_pago int,
-    @fecha_pago date,
-    @monto decimal(12,2),
-    @periodo_mes int,
-    @periodo_anio int,
-    @id_pago int OUTPUT
+    @id_concesion   int,
+    @id_estado_pago tinyint,  -- Optimizado a TINYINT
+    @fecha_pago     date,
+    @monto          decimal(12,2),
+    @periodo_mes    tinyint,  -- Optimizado a TINYINT
+    @periodo_anio   smallint, -- Optimizado a SMALLINT
+    @id_pago        int OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;

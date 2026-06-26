@@ -20,8 +20,8 @@ CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Ubicacion
     @id_ubicacion INT,
     @provincia    VARCHAR(60)   = NULL,
     @region       VARCHAR(80)   = NULL,
-    @latitud      DECIMAL(8,6)  = NULL,
-    @longitud     DECIMAL(9,6)  = NULL
+    @latitud      DECIMAL(8,6)  = NULL, 
+    @longitud     DECIMAL(9,6)  = NULL 
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -98,7 +98,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Tipo_parque
-     @id_tipo_parque INT,  
+     @id_tipo_parque TINYINT, -- Optimizado a TINYINT 
      @descripcion varchar(50)
 AS
 BEGIN
@@ -140,7 +140,7 @@ GO
 
 
 CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Parque_nacional
-    @id_parque INT,
+    @id_parque SMALLINT, -- Optimizado a SMALLINT
     @nombre VARCHAR(100) = NULL,
     @superficie decimal(12,2) = NULL
 AS
@@ -178,7 +178,7 @@ GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Datos_Guardaparque
     @id_guardaparque INT,
-    @dni CHAR(8),
+    @dni VARCHAR(10), -- Optimizado a VARCHAR(10)
     @nombre VARCHAR(50),
     @apellido VARCHAR(50)
 AS
@@ -214,7 +214,7 @@ GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_Modificar_Estado_Guardaparque
     @id_guardaparque INT,
-    @nuevo_estado CHAR(20)
+    @nuevo_estado VARCHAR(10) -- Optimizado a VARCHAR(10)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -244,7 +244,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_Registrar_Egreso_guardaparque
-    @id_parque INT,
+    @id_parque SMALLINT, -- Optimizado a SMALLINT
     @id_guardaparque INT,
     @fecha_fin DATE,
     @motivo_egreso varchar(100)
@@ -293,7 +293,7 @@ GO
 CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Empresa
     @id_empresa INT,
     @razon_social VARCHAR(120),
-    @cuit VARCHAR(11),
+    @cuit CHAR(11), -- Optimizado a CHAR(11)
     @rubro_principal VARCHAR(80)
 AS
 BEGIN
@@ -373,8 +373,8 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_concesion
-     @id_estado_concesion INT,
+CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Descripcion_Estado_concesion
+     @id_estado_concesion TINYINT, -- Optimizado a TINYINT
      @descripcion VARCHAR(30)
 AS
 BEGIN
@@ -415,7 +415,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_pago
-     @id_estado_pago INT,
+     @id_estado_pago TINYINT, -- Optimizado a TINYINT
      @descripcion VARCHAR(30)
 AS
 BEGIN
@@ -458,7 +458,7 @@ GO
 
 CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_Concesion
     @id_concesion INT,
-    @id_estado_concesion INT
+    @id_estado_concesion TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -488,7 +488,7 @@ GO
 
 CREATE OR ALTER PROCEDURE Concesiones.SP_Modificar_Estado_Pago_Canon
     @id_pago INT,
-    @id_estado_pago INT
+    @id_estado_pago TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -520,10 +520,9 @@ END
 GO
 
 -- schema comercial
-
 CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Tarifario_parque
-    @id_parque INT,
-    @id_tipo_visitante INT,
+    @id_parque SMALLINT, -- Optimizado a SMALLINT
+    @id_tipo_visitante TINYINT, -- Optimizado a TINYINT
     @precio_actual decimal(10,2)
 AS
 BEGIN
@@ -533,7 +532,7 @@ BEGIN
 
        IF NOT EXISTS (SELECT 1 FROM Comercial.Tarifario_parque
                    WHERE id_parque = @id_parque AND id_tipo_visitante = @id_tipo_visitante)
-        THROW 50001, 'No existe un tarifario para ese parque y tipo de visitante.', 1;
+        THROW 50001, 'No existe un tarifario para ese parque y tipo visitante.', 1;
 
         IF @precio_actual IS NULL OR @precio_actual < 0
             THROW 50002, 'El precio actual no puede ser nulo ni negativo.', 1;
@@ -555,7 +554,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Tipo_visitante
-    @id_tipo_visitante INT,
+    @id_tipo_visitante TINYINT, -- Optimizado a TINYINT
     @descripcion VARCHAR(50)
 AS
 BEGIN
@@ -597,7 +596,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Punto_de_venta
-    @id_punto_de_venta INT,
+    @id_punto_de_venta TINYINT, -- Optimizado a TINYINT
     @descripcion VARCHAR(50)
 AS
 BEGIN
@@ -630,8 +629,9 @@ BEGIN
     END CATCH
 END
 GO
+
 CREATE OR ALTER PROCEDURE Comercial.SP_Modificar_Forma_de_pago
-    @id_forma_de_pago INT,
+    @id_forma_de_pago TINYINT, -- Optimizado a TINYINT
     @descripcion VARCHAR(50)
 AS
 BEGIN
@@ -665,12 +665,11 @@ BEGIN
 END
 GO
 
-
 --SCHEMAS Actividades
 
 CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Guia
     @id_guia INT,
-    @dni CHAR(8),
+    @dni VARCHAR(10), -- Optimizado a VARCHAR(10)
     @nombre VARCHAR(50),
     @apellido VARCHAR(50),
     @titulo VARCHAR(80),
@@ -710,7 +709,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Tipo_actividad
-    @id_tipo_actividad INT,
+    @id_tipo_actividad TINYINT, -- Optimizado a TINYINT
     @descripcion VARCHAR(50)
 AS
 BEGIN
@@ -748,13 +747,14 @@ BEGIN
     END CATCH
 END
 GO
+
 CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Actividad
     @id_actividad INT,
-    @id_tipo_actividad INT = NULL,
-    @id_parque INT = NULL,
+    @id_tipo_actividad TINYINT = NULL, -- Optimizado a TINYINT
+    @id_parque SMALLINT = NULL, -- Optimizado a SMALLINT
     @nombre VARCHAR(80) = NULL,
-    @duracion_minutos INT = NULL,
-    @cupo_maximo INT = NULL,
+    @duracion_minutos SMALLINT = NULL, -- Optimizado a SMALLINT
+    @cupo_maximo SMALLINT = NULL, -- Optimizado a SMALLINT
     @costo DECIMAL(10,2) = NULL
 AS
 BEGIN
@@ -840,7 +840,7 @@ GO
 CREATE OR ALTER PROCEDURE Actividades.SP_Modificar_Turno_actividad
     @id_turno INT,
     @fecha DATE = NULL,
-    @hora_inicio TIME = NULL
+    @hora_inicio TIME(0) = NULL -- Optimizado a TIME(0)
 AS
 BEGIN
     SET NOCOUNT ON;

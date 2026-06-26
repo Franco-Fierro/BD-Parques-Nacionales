@@ -5,7 +5,6 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
-
 ----------------------------------------------------------------
 -- Nombre del archivo: 02_PruebasDeImportacion.sql
 -- Descripcion: casos de uso para la importacion de datos desde archivos CSV
@@ -17,7 +16,7 @@ GO
 
 
 EXEC Parques.SP_ImportarParques_CSV 
-    @RutaArchivo = 'C:\CompletarRuta\data\Parques_Nacionales_-_con_WKT.csv';
+    @RutaArchivo = 'C:\data\Parques_Nacionales_-_con_WKT.csv';
 
 
 SELECT 
@@ -36,9 +35,10 @@ INNER JOIN Parques.Tipo_parque TP
     ON PN.id_tipo_parque = TP.id_tipo_parque
 ORDER BY PN.nombre;
 
+TRUNCATE TABLE  Actividades.Guia;
 
 EXEC Actividades.SP_ImportarGuiasTurismo_CSV 
-    @RutaArchivo = 'C:\CompletarRuta\data\registro-de-guias-de-turismo.csv';
+    @RutaArchivo = 'C:\data\registro-de-guias-de-turismo.csv';
 
 SELECT 
     dni AS [DNI (Formateado)],
@@ -51,7 +51,7 @@ SELECT
         ELSE 'ACTIVA'
     END AS [Estado Autorizacion]
 FROM Actividades.Guia
-ORDER BY apellido, nombre;
+ORDER BY dni;
 
 SELECT 
     archivo AS [Archivo Origen],

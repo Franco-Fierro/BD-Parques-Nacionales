@@ -5,7 +5,6 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
-
 ----------------------------------------------------------------
 -- Nombre del archivo: 02_StoredProcedureImportacion.sql
 -- Descripcion: procedimientos almacenados para la importacion de datos desde archivos, con validaciones, limpieza y manejo de errores.
@@ -77,8 +76,8 @@ BEGIN
         'Error de conversión o ID de Región inválido (' + ISNULL(Region, 'NULO') + ')'
     FROM #Temp_Parques
     WHERE TRY_CAST(Superficie_km2 AS DECIMAL(12,2)) IS NULL
-       OR TRY_CAST(Latitud AS DECIMAL(8,6)) IS NULL
-       OR TRY_CAST(Longitud AS DECIMAL(9,6)) IS NULL
+       OR TRY_CAST(Latitud AS DECIMAL(8,6)) IS NULL 
+       OR TRY_CAST(Longitud AS DECIMAL(9,6)) IS NULL -- Optimizado a DECIMAL(9,6)
        OR LTRIM(RTRIM(Nombre)) = '' OR Nombre IS NULL
        OR LTRIM(RTRIM(Nombre_provincia)) = '' OR Nombre_provincia IS NULL
        OR TRY_CAST(Region AS INT) NOT IN (1,2,3,4,5,6) OR Region IS NULL;
@@ -98,17 +97,18 @@ BEGIN
                 WHEN 6 THEN 'Región Patagonia'
             END AS VARCHAR(80)
         ) COLLATE DATABASE_DEFAULT AS RegionNombre,
-        TRY_CAST(Latitud AS DECIMAL(8,6)) AS Latitud,
-        TRY_CAST(Longitud AS DECIMAL(9,6)) AS Longitud,
+        TRY_CAST(Latitud AS DECIMAL(8,6)) AS Latitud, 
+        TRY_CAST(Longitud AS DECIMAL(9,6)) AS Longitud, -- Optimizado a DECIMAL(9,6)
         CAST('Parque Nacional' AS VARCHAR(50)) COLLATE DATABASE_DEFAULT AS TipoParqueDescripcion
     INTO #ParquesValidos
     FROM #Temp_Parques
     WHERE TRY_CAST(Superficie_km2 AS DECIMAL(12,2)) IS NOT NULL
-      AND TRY_CAST(Latitud AS DECIMAL(8,6)) IS NOT NULL
-      AND TRY_CAST(Longitud AS DECIMAL(9,6)) IS NOT NULL
+      AND TRY_CAST(Latitud AS DECIMAL(8,6)) IS NOT NULL 
+      AND TRY_CAST(Longitud AS DECIMAL(9,6)) IS NOT NULL -- Optimizado a DECIMAL(9,6)
       AND LTRIM(RTRIM(Nombre)) <> '' AND Nombre IS NOT NULL
       AND LTRIM(RTRIM(Nombre_provincia)) <> '' AND Nombre_provincia IS NOT NULL
       AND TRY_CAST(Region AS INT) IN (1,2,3,4,5,6);
+
     -- Inserta los nuevos tipos de parque y ubicaciones, evitando duplicados mediante NOT EXISTS.
     INSERT INTO Parques.Tipo_parque (descripcion)
     SELECT DISTINCT TipoParqueDescripcion 
@@ -193,7 +193,7 @@ BEGIN
 
         -- Segunda tabla temporal: Almacena los registros limpios y deduplicados
         CREATE TABLE #GuiasValidos (
-            DNI CHAR(8) COLLATE DATABASE_DEFAULT,
+            DNI VARCHAR(10) COLLATE DATABASE_DEFAULT, -- Optimizado a VARCHAR(10)
             Nombre VARCHAR(50) COLLATE DATABASE_DEFAULT,
             Apellido VARCHAR(50) COLLATE DATABASE_DEFAULT,
             Titulo VARCHAR(80) COLLATE DATABASE_DEFAULT,
@@ -227,16 +227,16 @@ BEGIN
 
         ;WITH CTE_GuiasLimpios AS (
             SELECT 
-                CAST(RIGHT('00000000' + LTRIM(RTRIM(REPLACE([numero], CHAR(13), ''))), 8) AS CHAR(8)) COLLATE DATABASE_DEFAULT AS DNI,
-                CAST(LEFT(LTRIM(RTRIM(REPLACE([nombre], CHAR(13), ''))), 50) AS VARCHAR(50)) COLLATE DATABASE_DEFAULT AS Nombre,
-                CAST(LEFT(LTRIM(RTRIM(REPLACE([apellido], CHAR(13), ''))), 50) AS VARCHAR(50)) COLLATE DATABASE_DEFAULT AS Apellido,
+                CAST(LTRIM(RTRIM(REPLACE([numero], CHAR(13), ''))) AS VARCHAR(10)) COLLATE DATABASE_DEFAULT AS DNI, -- Limpieza y casteo directo a VARCHAR(10)
+                CAST(LEFT(LTRIM(RTRIM(UPPER(REPLACE([nombre], CHAR(13), '')))), 50) AS VARCHAR(50)) COLLATE DATABASE_DEFAULT AS Nombre,
+                CAST(LEFT(LTRIM(RTRIM(UPPER(REPLACE([apellido], CHAR(13), '')))), 50) AS VARCHAR(50)) COLLATE DATABASE_DEFAULT AS Apellido,
                 CAST(LEFT(LTRIM(RTRIM(REPLACE([categoria], CHAR(13), ''))), 80) AS VARCHAR(80)) COLLATE DATABASE_DEFAULT AS Titulo,
                 DATEFROMPARTS(TRY_CAST(REPLACE([periodo], CHAR(13), '') AS INT), 12, 31) AS Vigencia,
                 
                 -- LÓGICA ANTI-DUPLICADOS: Numeramos cada fila agrupando por el DNI limpio
                 -- Si hay dos DNIs iguales, el que tenga el periodo mayor (DESC) recibe el número 1.
                 ROW_NUMBER() OVER(
-                    PARTITION BY CAST(RIGHT('00000000' + LTRIM(RTRIM(REPLACE([numero], CHAR(13), ''))), 8) AS CHAR(8)) COLLATE DATABASE_DEFAULT
+                    PARTITION BY CAST(LTRIM(RTRIM(REPLACE([numero], CHAR(13), ''))) AS VARCHAR(10)) COLLATE DATABASE_DEFAULT
                     ORDER BY TRY_CAST(REPLACE([periodo], CHAR(13), '') AS INT) DESC
                 ) AS Fila_Num
 

@@ -5,18 +5,10 @@
 --GRUPO: 03
 --FIERRO, FRANCO EZEQUIEL
 --GISMONDI, FRANCISCO
-
 ----------------------------------------------------------------
 --ARCHIVO: 01_StoreProcedureBorrado.sql
 --PROPOSITO: Contiene los procedimientos almacenados para eliminar registros de las tablas, con validaciones de integridad referencial.
 ---------------------------------------------------------------- 
-
--- Cambiar al contexto master
-/*USE master;
-GO
--- Eliminar la base
-DROP DATABASE COM5600_G03;
-GO*/
 
 USE COM5600_G03
 GO
@@ -66,7 +58,7 @@ Propósito: Eliminar un tipo de parque, verificando que no existan parques nacio
 Parámetros: @id_tipo_parque (INT) - ID del tipo de parque a eliminar.
 */
 CREATE OR ALTER PROCEDURE Parques.SP_Borrar_Tipo_Parque
-	@id_tipo_parque INT
+	@id_tipo_parque TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -103,7 +95,7 @@ Propósito: Eliminar un tipo de actividad, verificando que no existan actividade
 Parámetros: @id_tipo_actividad (INT) - ID del tipo de actividad a eliminar.
 */
 CREATE OR ALTER PROCEDURE Actividades.SP_Borrar_Tipo_Actividad
-	@id_tipo_actividad INT
+	@id_tipo_actividad TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -216,7 +208,7 @@ Propósito: Eliminar un punto de venta, verificando que no existan ventas asocia
 Parámetros: @id_punto_de_venta (INT) - ID del punto de venta a eliminar.
 */
 CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Punto_de_venta
-	@id_punto_de_venta INT
+	@id_punto_de_venta TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -247,7 +239,7 @@ Propósito: Eliminar una forma de pago, verificando que no existan ventas asocia
 Parámetros: @id_forma_de_pago (INT) - ID de la forma de pago a eliminar.
 */
 CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Forma_de_pago
-	@id_forma_de_pago INT
+	@id_forma_de_pago TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -277,7 +269,7 @@ Propósito: Eliminar un tipo de visitante, verificando que no existan entradas o
 Parámetros: @id_tipo_visitante (INT) - ID del tipo de visitante a eliminar.
 */
 CREATE OR ALTER PROCEDURE Comercial.SP_Borrar_Tipo_visitante
-	@id_tipo_visitante INT
+	@id_tipo_visitante TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -341,7 +333,6 @@ BEGIN
     END CATCH
 END
 GO
-
 /*
 Nombre: Comercial.Borrar_Item_vendible
 Propósito: Eliminar un item vendible, verificando que no existan detalles de venta asociados.
@@ -383,7 +374,7 @@ Propósito: Eliminar un estado de concesion, verificando que no existan concesio
 Parámetros: @id_estado_concesion (INT) - ID del estado de concesion a eliminar.
 */
 CREATE OR ALTER PROCEDURE Concesiones.SP_Borrar_Estado_concesion
-    @id_estado_concesion INT
+    @id_estado_concesion TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -417,7 +408,7 @@ Propósito: Eliminar un estado de pago, verificando que no existan pagos asociad
 Parámetros: @id_estado_pago (INT) - ID del estado de pago a eliminar.
 */
 CREATE OR ALTER PROCEDURE Concesiones.SP_Borrar_Estado_pago
-    @id_estado_pago INT
+    @id_estado_pago TINYINT -- Optimizado a TINYINT
 AS
 BEGIN
     SET NOCOUNT ON;

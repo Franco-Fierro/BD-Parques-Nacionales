@@ -55,7 +55,7 @@ BEGIN TRY
     --Lanin 2025-01=5, 2025-03=1
     --enero de Lanin separado en 2 semanas (3 y 2)
     --solo Lanin
-    --vacio (sin visitas
+    --vacio (sin visitas)
 
 END TRY
 BEGIN CATCH PRINT 'FALLO INESPERADO: ' + ERROR_MESSAGE(); END CATCH

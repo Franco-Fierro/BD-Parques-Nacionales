@@ -107,6 +107,7 @@ WHERE Dni IS NOT NULL;
 CLOSE SYMMETRIC KEY Clave_Simetrica_DNI;
 GO
 
+ALTER TABLE Actividades.Guia DROP CONSTRAINT UQ__Guardapa__D87608A7B5942B26;
 ALTER TABLE Parques.Guardaparque DROP COLUMN Dni;
 EXEC sp_rename 'Parques.Guardaparque.dni_cifrado', 'Dni', 'COLUMN';
 GO
@@ -131,6 +132,9 @@ WHERE Dni IS NOT NULL;
 CLOSE SYMMETRIC KEY Clave_Simetrica_DNI;
 GO
 
+ALTER TABLE Actividades.Guia DROP CONSTRAINT UQ__Guia__D87608A7D10304B7;
 ALTER TABLE Actividades.Guia DROP COLUMN Dni;
 EXEC sp_rename 'Actividades.Guia.dni_cifrado', 'Dni', 'COLUMN';
 GO
+
+select * from Actividades.Guia

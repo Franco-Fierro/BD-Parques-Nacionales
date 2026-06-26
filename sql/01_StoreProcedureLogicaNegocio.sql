@@ -12,19 +12,19 @@ GO
 
 
 CREATE TYPE Comercial.TipoItemsVenta AS TABLE (
-    tipo_item VARCHAR(20) NOT NULL,     -- 'Entrada' o 'Ticket'
-    id_parque INT NULL,                 -- para Entrada
-    id_tipo_visitante INT NULL,         -- para Entrada
-    fecha_acceso DATE NULL,             -- para Entrada (opcional)
-    id_turno INT NULL,                  -- para Ticket
-    cantidad INT NOT NULL DEFAULT 1     -- soporte para venta masiva del mismo ítem
+    tipo_item VARCHAR(20) NOT NULL,     
+    id_parque SMALLINT NULL,            -- Optimizado a SMALLINT
+    id_tipo_visitante TINYINT NULL,     -- Optimizado a TINYINT
+    fecha_acceso DATE NULL,             
+    id_turno INT NULL,                  
+    cantidad INT NOT NULL DEFAULT 1     
 );
 GO
 
 CREATE OR ALTER PROCEDURE Comercial.SP_RegistrarVenta
     @items Comercial.TipoItemsVenta READONLY,
-    @id_punto_de_venta INT,
-    @id_forma_de_pago INT,
+    @id_punto_de_venta TINYINT, -- Optimizado a TINYINT
+    @id_forma_de_pago TINYINT, -- Optimizado a TINYINT
     @numero_factura VARCHAR(20),
     @id_venta_generada INT OUTPUT
 AS
@@ -32,8 +32,8 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE @i INT = 1, @max INT, @u INT;
-    DECLARE @tipo VARCHAR(20), @id_parque INT, @id_tv INT,@fecha DATE, @id_turno INT, @cantidad INT;
-    DECLARE @precio DECIMAL(10,2), @id_entrada INT, @id_ticket INT, @id_item INT, @cupo_max INT, @ocupados INT;
+    DECLARE @tipo VARCHAR(20), @id_parque SMALLINT, @id_tv TINYINT, @fecha DATE, @id_turno INT, @cantidad INT; -- Variables Optimizadas
+    DECLARE @precio DECIMAL(10,2), @id_entrada INT, @id_ticket INT, @id_item INT, @cupo_max SMALLINT, @ocupados INT; -- @cupo_max a SMALLINT
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -59,12 +59,10 @@ BEGIN
 
         SET @id_venta_generada = SCOPE_IDENTITY();
 
-
-
         DECLARE @cola TABLE (
             rn INT IDENTITY(1,1),
             tipo_item VARCHAR(20),
-            id_parque INT, id_tipo_visitante INT, fecha_acceso DATE,
+            id_parque SMALLINT, id_tipo_visitante TINYINT, fecha_acceso DATE, -- Tipos actualizados
             id_turno INT, cantidad INT
         );
 
@@ -76,25 +74,17 @@ BEGIN
 
         SET @max = (SELECT MAX(rn) FROM @cola);
 
-
-
         WHILE @i <= @max
         BEGIN
             SELECT @tipo = tipo_item, @id_parque = id_parque, @id_tv = id_tipo_visitante,
                    @fecha = fecha_acceso, @id_turno = id_turno, @cantidad = cantidad
             FROM @cola WHERE rn = @i;
 
-            -- reset obligatorio: SELECT @x=col FROM (sin filas) deja el valor anterior, no NULL
             SET @precio = NULL;
             SET @cupo_max = NULL;
 
-            IF @tipo NOT IN ('Entrada', 'Ticket')
-                THROW 50006, 'El tipo de ítem debe ser "Entrada" o "Ticket".', 1;
-
             IF @cantidad < 1
                 THROW 50007, 'La cantidad de cada ítem debe ser al menos 1.', 1;
-
-
 
             IF @tipo = 'Entrada'
             BEGIN
@@ -125,8 +115,6 @@ BEGIN
                     SET @u = @u + 1;
                 END
             END
-
-
             ELSE
             BEGIN
                 IF @id_turno IS NULL
@@ -155,7 +143,7 @@ BEGIN
                     SET @id_ticket = SCOPE_IDENTITY();
 
                     INSERT INTO Comercial.Item_vendible (tipo_item, id_entrada, id_ticket)
-                    VALUES ('Ticket', NULL, @id_ticket);
+                    VALUES ('Ticket Actividad', NULL, @id_ticket);
                     SET @id_item = SCOPE_IDENTITY();
 
                     INSERT INTO Comercial.Detalle_venta (id_venta, id_item, subtotal)
@@ -167,7 +155,6 @@ BEGIN
 
             SET @i = @i + 1;
         END
-
 
         UPDATE Comercial.Venta
         SET total = (SELECT SUM(subtotal) FROM Comercial.Detalle_venta WHERE id_venta = @id_venta_generada)
@@ -240,13 +227,14 @@ BEGIN
     END CATCH
 END
 GO
+
 CREATE OR ALTER PROCEDURE Concesiones.SP_RegistrarPagoCanon
     @id_concesion INT,
     @fecha_pago DATE,
     @monto DECIMAL(12,2),
-    @periodo_mes INT,
-    @periodo_anio INT,
-    @id_estado_pago INT = NULL,
+    @periodo_mes TINYINT, -- Optimizado a TINYINT
+    @periodo_anio SMALLINT, -- Optimizado a SMALLINT
+    @id_estado_pago TINYINT = NULL, -- Optimizado a TINYINT
     @id_pago_generado INT OUTPUT
 AS
 BEGIN
@@ -338,12 +326,12 @@ GO
 
 CREATE OR ALTER PROCEDURE Parques.SP_ReasignarGuardaparque
     @id_guardaparque INT,
-    @id_parque_nuevo INT,
+    @id_parque_nuevo SMALLINT, -- Optimizado a SMALLINT
     @fecha_reasignacion DATE
 AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @id_asignacion_actual INT, @id_parque_actual INT;
+    DECLARE @id_asignacion_actual INT, @id_parque_actual SMALLINT; -- Optimizado a SMALLINT
 
     BEGIN TRY
         BEGIN TRANSACTION;
