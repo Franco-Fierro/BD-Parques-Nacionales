@@ -64,7 +64,7 @@ def agregar_tipo():
             messagebox.showinfo("Éxito", f"Tipo de parque agregado correctamente (ID: {id_generado}).")
 
         except Exception as e:
-            # Si el SQL ejecuta tu "THROW 50001", el error se captura aquí amigablemente
+            # Si el SQL ejecuta tu "THROW 50001", el error se captura
             conn.rollback()
             messagebox.showerror("Error SQL", f"No se pudo registrar:\n{e}")
 
@@ -91,10 +91,8 @@ def eliminar_tipo():
         try:
             cursor = conn.cursor()
             
-            # Ejecutamos el SP enviando el ID convertido a entero (adecuado para TINYINT)
             cursor.execute("EXEC Parques.SP_Borrar_Tipo_Parque @id_tipo_parque=?", int(id_tipo))
             
-            # Aunque el SP tiene un COMMIT interno, pyodbc suele requerir el commit de la conexión
             conn.commit() 
             
             # Actualizamos la interfaz
@@ -109,7 +107,6 @@ def eliminar_tipo():
             except:
                 pass
             
-            # Limpiamos el mensaje de error para que sea legible para el usuario final
             mensaje_error = str(e)
             if "No existe el Tipo de Parque" in mensaje_error:
                 msg = "El tipo de parque seleccionado ya no existe en la base de datos."
