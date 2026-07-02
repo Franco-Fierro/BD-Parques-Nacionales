@@ -295,3 +295,159 @@ BEGIN
     END CATCH
 END
 GO
+
+
+
+--Importacion de Areas Protegidas de Argentina 
+
+--Para Su funcionamiento SE DEBE tener instalado el driver Microsoft.ACE.OLEDB.16.0 en su version x64
+
+
+
+
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+GO
+EXEC sp_configure 'Ad Hoc Distributed Queries', 1;  
+RECONFIGURE;
+GO
+EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.16.0', N'AllowInProcess', 1;
+GO
+ 
+CREATE OR ALTER PROCEDURE Parques.SP_ImportarAreasProtegidas_XLSX
+    @RutaArchivo VARCHAR(500)
+AS
+BEGIN
+    BEGIN TRY
+    SET NOCOUNT ON;
+    IF OBJECT_ID('tempdb..#Temp_Areas')   IS NOT NULL DROP TABLE #Temp_Areas;
+    IF OBJECT_ID('tempdb..#AreasValidas')  IS NOT NULL DROP TABLE #AreasValidas;
+ 
+    -- Tabla temporal con las columnas del Excel
+    CREATE TABLE #Temp_Areas (
+        Provincia  VARCHAR(200) COLLATE DATABASE_DEFAULT,
+        Nombre     VARCHAR(200) COLLATE DATABASE_DEFAULT,
+        Region     VARCHAR(200) COLLATE DATABASE_DEFAULT,
+        Superficie VARCHAR(50),
+        Latitud    VARCHAR(50),
+        Longitud   VARCHAR(50)
+    );
+ 
+    DECLARE @SQL NVARCHAR(MAX);
+    SET @SQL = '
+    INSERT INTO #Temp_Areas (Provincia, Nombre, Region, Superficie, Latitud, Longitud)
+    SELECT [F1], [F2], [F4], [F5], [F6], [F7]
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.16.0'',
+        ''Excel 12.0 Xml;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Sheet1$A3:O1000]''
+    );';
+    EXEC sp_executesql @SQL;
+ 
+    -- Registra en el log de errores los registros que no cumplen las validaciones
+    INSERT INTO Parques.Log_Errores_Importacion (archivo, registro_nombre, motivo_error)
+    SELECT
+        @RutaArchivo,
+        ISNULL(NULLIF(LTRIM(RTRIM(Nombre)), ''), 'SIN NOMBRE'),
+        'Datos invalidos o incompletos (nombre/provincia vacios, o superficie/coordenadas en 0 o no numericas)'
+    FROM #Temp_Areas
+    WHERE LTRIM(RTRIM(ISNULL(Nombre,'')))    = ''
+       OR LTRIM(RTRIM(ISNULL(Provincia,''))) = ''
+       OR TRY_CAST(Superficie AS DECIMAL(12,2)) IS NULL
+       OR TRY_CAST(Superficie AS DECIMAL(12,2)) <= 0
+       OR TRY_CAST(Latitud  AS DECIMAL(8,6)) IS NULL
+       OR TRY_CAST(Latitud  AS DECIMAL(8,6)) NOT BETWEEN -90  AND 90
+       OR TRY_CAST(Latitud  AS DECIMAL(8,6)) = 0
+       OR TRY_CAST(Longitud AS DECIMAL(9,6)) IS NULL
+       OR TRY_CAST(Longitud AS DECIMAL(9,6)) NOT BETWEEN -180 AND 180
+       OR TRY_CAST(Longitud AS DECIMAL(9,6)) = 0;
+ 
+
+    SELECT
+        CAST(LTRIM(RTRIM(Nombre)) AS VARCHAR(100)) COLLATE DATABASE_DEFAULT AS Nombre,
+        CAST(
+            CASE
+                WHEN Nombre LIKE 'Parque Nacional%'            THEN 'Parque Nacional'
+                WHEN Nombre LIKE 'Parque Provincial%'          THEN 'Parque Provincial'
+                WHEN Nombre LIKE 'Parque Natural%'             THEN 'Parque Natural'
+                WHEN Nombre LIKE 'Parque Municipal%'           THEN 'Parque Municipal'
+                WHEN Nombre LIKE 'Parque Interjurisdiccional%' THEN 'Parque Interjurisdiccional'
+                WHEN Nombre LIKE 'Reserva%' OR Nombre LIKE 'Res.%' THEN 'Reserva'
+                WHEN Nombre LIKE 'Monumento%'                  THEN 'Monumento Natural'
+                WHEN Nombre LIKE 'Paisaje%'                    THEN 'Paisaje Protegido'
+                ELSE 'Área Protegida'
+            END AS VARCHAR(50)
+        ) COLLATE DATABASE_DEFAULT AS TipoParqueDescripcion,
+        CAST(LTRIM(RTRIM(Provincia)) AS VARCHAR(60)) COLLATE DATABASE_DEFAULT AS Provincia,
+        CAST(ISNULL(NULLIF(LTRIM(RTRIM(Region)),''),'Sin especificar') AS VARCHAR(80)) COLLATE DATABASE_DEFAULT AS RegionNombre,
+        TRY_CAST(Superficie AS DECIMAL(12,2)) AS Superficie,  
+        TRY_CAST(Latitud    AS DECIMAL(8,6))  AS Latitud,
+        TRY_CAST(Longitud   AS DECIMAL(9,6))  AS Longitud
+    INTO #AreasValidas
+    FROM #Temp_Areas
+    WHERE LTRIM(RTRIM(ISNULL(Nombre,'')))    <> ''
+      AND LTRIM(RTRIM(ISNULL(Provincia,''))) <> ''
+      AND TRY_CAST(Superficie AS DECIMAL(12,2)) > 0
+      AND TRY_CAST(Latitud    AS DECIMAL(8,6))  BETWEEN -90  AND 90  AND TRY_CAST(Latitud    AS DECIMAL(8,6)) <> 0
+      AND TRY_CAST(Longitud   AS DECIMAL(9,6))  BETWEEN -180 AND 180 AND TRY_CAST(Longitud   AS DECIMAL(9,6)) <> 0;
+ 
+    INSERT INTO Parques.Tipo_parque (descripcion)
+    SELECT DISTINCT TipoParqueDescripcion
+    FROM #AreasValidas PV
+    WHERE NOT EXISTS (
+        SELECT 1 FROM Parques.Tipo_parque TP WHERE TP.descripcion = PV.TipoParqueDescripcion
+    );
+
+    INSERT INTO Parques.Ubicacion (provincia, region, latitud, longitud)
+    SELECT DISTINCT Provincia, RegionNombre, Latitud, Longitud
+    FROM #AreasValidas PV
+    WHERE NOT EXISTS (
+        SELECT 1 FROM Parques.Ubicacion U
+        WHERE U.provincia = PV.Provincia
+          AND U.region = PV.RegionNombre
+          AND U.latitud = PV.Latitud
+          AND U.longitud = PV.Longitud
+    );
+ 
+    -- UPDATE de las areas que ya existen
+
+    UPDATE PN
+    SET
+        PN.id_ubicacion = U.id_ubicacion,
+        PN.id_tipo_parque = TP.id_tipo_parque,
+        PN.superficie = PV.Superficie
+    FROM Parques.Parque_nacional PN
+    INNER JOIN #AreasValidas PV ON PN.nombre = PV.Nombre
+    INNER JOIN Parques.Ubicacion U
+        ON U.provincia = PV.Provincia AND U.region = PV.RegionNombre AND U.latitud = PV.Latitud AND U.longitud = PV.Longitud
+    INNER JOIN Parques.Tipo_parque TP
+        ON TP.descripcion = PV.TipoParqueDescripcion;
+ 
+    -- INSERT de las nuevas.
+    INSERT INTO Parques.Parque_nacional (id_ubicacion, id_tipo_parque, nombre, superficie)
+    SELECT
+        U.id_ubicacion,
+        TP.id_tipo_parque,
+        PV.Nombre,
+        PV.Superficie
+    FROM #AreasValidas PV
+    INNER JOIN Parques.Ubicacion U
+        ON U.provincia = PV.Provincia AND U.region = PV.RegionNombre AND U.latitud = PV.Latitud AND U.longitud = PV.Longitud
+    INNER JOIN Parques.Tipo_parque TP
+        ON TP.descripcion = PV.TipoParqueDescripcion
+    WHERE NOT EXISTS (
+        SELECT 1 FROM Parques.Parque_nacional PN
+        WHERE PN.nombre = PV.Nombre
+    );
+ 
+    DROP TABLE #AreasValidas;
+    DROP TABLE #Temp_Areas;
+    PRINT 'Proceso completado exitosamente. Los registros correctos fueron importados y los erroneos quedaron en el log.';
+    END TRY
+    BEGIN CATCH
+        IF OBJECT_ID('tempdb..#Temp_Areas')   IS NOT NULL DROP TABLE #Temp_Areas;
+        IF OBJECT_ID('tempdb..#AreasValidas')  IS NOT NULL DROP TABLE #AreasValidas;
+        PRINT 'Error durante la importación: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
